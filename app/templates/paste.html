@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Paste {{ paste.id }}{% endblock %}
+{% block content %}
+<div class="row">
+  <span class="muted">Expires {{ paste.expires_at.strftime("%Y-%m-%d %H:%M:%S UTC") }}</span>
+  <button type="button" onclick="navigator.clipboard.writeText(location.href); this.textContent='Copied!'">Copy link</button>
+</div>
+<pre>{{ paste.content }}</pre>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<form method="post" action="/" enctype="multipart/form-data">
+  {% if error %}<p class="error">{{ error }}</p>{% endif %}
+  <textarea name="content" rows="18" placeholder="Paste your text here..." required>{{ content }}</textarea>
+  <div class="row">
+    <label>Expires after
+      <select name="ttl">
+        {% for key, label in ttl_labels.items() %}
+        <option value="{{ key }}"{% if key == selected_ttl %} selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <button type="submit">Create</button>
+  </div>
+</form>
+{% endblock %}
