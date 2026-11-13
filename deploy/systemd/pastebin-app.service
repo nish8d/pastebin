@@ -1,0 +1,27 @@
+# systemd *user* service that runs the web app (uvicorn) in the background.
+#
+# A service = "keep this process running". systemd starts it, restarts it if it
+# crashes, and collects its output into the journal.
+#
+# Install (see docs/runbook.md):  systemctl --user link $PWD/deploy/systemd/pastebin-app.service
+# Inspect:  systemctl --user status pastebin-app
+#           journalctl --user -u pastebin-app -f
+#
+# %h = your home directory (systemd specifier), so no username is hard-coded.
+
+[Unit]
+Description=Pastebin web app (uvicorn)
+
+[Service]
+WorkingDirectory=%h/Desktop/pp/pastebin
+# Same .env the app and cron use: one source of configuration.
+EnvironmentFile=%h/Desktop/pp/pastebin/.env
+# --proxy-headers: trust X-Forwarded-* from Nginx so the app sees the real client.
+ExecStart=%h/Desktop/pp/pastebin/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --proxy-headers
+# If it crashes (e.g. started before Postgres was ready), try again in 3 seconds.
+Restart=on-failure
+RestartSec=3
+
+[Install]
+# "Start this when my user session starts" (after `systemctl --user enable`).
+WantedBy=default.target

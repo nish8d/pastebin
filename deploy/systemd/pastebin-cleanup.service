@@ -1,0 +1,16 @@
+# systemd *user* service for ONE run of the cleanup job.
+#
+# Type=oneshot: the program runs, finishes, and exits. That is normal, not a crash.
+# Nothing starts this directly; pastebin-cleanup.timer triggers it every minute.
+#
+# Run once by hand:  systemctl --user start pastebin-cleanup
+# Inspect:           journalctl --user -u pastebin-cleanup -n 20
+
+[Unit]
+Description=Pastebin: delete expired pastes
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/Desktop/pp/pastebin
+EnvironmentFile=%h/Desktop/pp/pastebin/.env
+ExecStart=%h/Desktop/pp/pastebin/.venv/bin/python -m app.cleanup

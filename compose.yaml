@@ -1,0 +1,40 @@
+# Docker Compose: the two "infrastructure" services the app depends on.
+#
+#   db     PostgreSQL 17, published only on 127.0.0.1:5442 (not reachable from other machines).
+#   nginx  Reverse proxy on port 8080 -> the app (uvicorn on 127.0.0.1:8000, run by systemd).
+#
+# The app itself is NOT in here on purpose: it runs as a systemd user service,
+# the way you'd run a Python app directly on a VPS.
+#
+# Inspect:  docker compose ps | docker compose logs -f nginx | docker compose logs db
+name: pastebin
+
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: pastebin
+      POSTGRES_PASSWORD: pastebin
+      POSTGRES_DB: pastebin
+    ports:
+      - "127.0.0.1:5442:5432"   # host:container. 5432 is already taken on this machine.
+    volumes:
+      - pgdata:/var/lib/postgresql/data   # named volume: data survives container restarts
+    restart: unless-stopped      # come back after a crash or reboot, unless you stopped it
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "pastebin"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  nginx:
+    image: nginx:1.27
+    # Host networking: nginx shares the host's network, so "127.0.0.1:8000" in its
+    # config means the host's port 8000, where uvicorn listens.
+    network_mode: host
+    volumes:
+      - ./deploy/nginx/pastebin.conf:/etc/nginx/conf.d/default.conf:ro
+    restart: unless-stopped
+
+volumes:
+  pgdata:

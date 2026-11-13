@@ -1,0 +1,16 @@
+# BEGIN pastebin
+# Cron entry for the cleanup job (the classic alternative to the systemd timer).
+#
+# Fields: minute hour day-of-month month day-of-week   command
+#         *      *    *            *     *              = every minute
+#
+# Cron runs commands with an almost empty environment and in your home directory,
+# so the command must: cd into the project, load .env itself (set -a exports
+# every variable it defines), and redirect output to a log file, because cron
+# has no journal and would otherwise try to email the output.
+#
+# Install:  (crontab -l 2>/dev/null; cat deploy/cron/pastebin-cleanup.cron) | crontab -
+# Inspect:  crontab -l   |   tail -f logs/cleanup-cron.log
+# Remove:   crontab -l | sed '/^# BEGIN pastebin$/,/^# END pastebin$/d' | crontab -
+* * * * * cd $HOME/Desktop/pp/pastebin && set -a && . ./.env && set +a && .venv/bin/python -m app.cleanup >> logs/cleanup-cron.log 2>&1
+# END pastebin

@@ -1,0 +1,18 @@
+# systemd *user* timer: systemd's version of a cron schedule.
+#
+# A timer starts the service with the same name (pastebin-cleanup.service).
+#
+# Inspect:  systemctl --user list-timers pastebin-cleanup
+#           journalctl --user -u pastebin-cleanup -f
+
+[Unit]
+Description=Run pastebin cleanup every minute
+
+[Timer]
+# Every minute, at second 0. Try: systemd-analyze calendar minutely
+OnCalendar=minutely
+# If the machine was off/asleep at a scheduled time, run once as soon as possible.
+Persistent=true
+
+[Install]
+WantedBy=timers.target
